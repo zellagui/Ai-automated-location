@@ -1,10 +1,10 @@
 <template>
-  <formPage msg="Welcome to Your Vue.js + TypeScript App" />
+  <nav>
+    <router-link to="/form">Form</router-link> |
+    <router-link to="/preview">Preview</router-link>
+  </nav>
+  <router-view />
 </template>
-
-<script lang="ts" setup>
-import formPage from "./components/formPage.vue";
-</script>
 
 <style>
 #app {
@@ -13,6 +13,18 @@ import formPage from "./components/formPage.vue";
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  margin-top: 60px;
+}
+
+nav {
+  padding: 30px;
+}
+
+nav a {
+  font-weight: bold;
+  color: #2c3e50;
+}
+
+nav a.router-link-exact-active {
+  color: #42b983;
 }
 </style>
