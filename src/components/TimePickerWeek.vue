@@ -50,8 +50,23 @@ import {
 
 import { audienceObject } from "../stores/storesRef";
 
-type Weekday = "Mon" | "Tue" | "Wed" | "Thu" | "Fri" | "Sat" | "Sun";
-const weekdays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+type Weekday =
+  | "Monday"
+  | "Tuesday"
+  | "Wednesday"
+  | "Thursday"
+  | "Friday"
+  | "Saturday"
+  | "Sunday";
+const weekdays = [
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+  "Sunday",
+];
 
 let selectedDay = ref<Weekday | null>(null);
 let rangeStart = ref<number | null>(null);
@@ -88,13 +103,13 @@ onMounted(() => {
 });
 
 const week = ref<Record<Weekday, number[][]>>({
-  Mon: [],
-  Tue: [],
-  Wed: [],
-  Thu: [],
-  Fri: [],
-  Sat: [],
-  Sun: [],
+  Monday: [],
+  Tuesday: [],
+  Wednesday: [],
+  Thursday: [],
+  Friday: [],
+  Saturday: [],
+  Sunday: [],
 });
 
 //list of ranges selected
@@ -124,13 +139,13 @@ function clear() {
   hoverEnd.value = null;
   hoverDay.value = null;
   week.value = {
-    Mon: [],
-    Tue: [],
-    Wed: [],
-    Thu: [],
-    Fri: [],
-    Sat: [],
-    Sun: [],
+    Monday: [],
+    Tuesday: [],
+    Wednesday: [],
+    Thursday: [],
+    Friday: [],
+    Saturday: [],
+    Sunday: [],
   };
   rangeSet.value = []; // This clears the rangeSet
   rangeSetString.value = [];

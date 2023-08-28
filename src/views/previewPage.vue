@@ -18,7 +18,7 @@
       </Crow>
       <CFormFloating>
         <CFormTextarea
-          v-model="audienceObject.audienceDescriptionAI"
+          v-model="audienceObject.audienceDescription"
           style="height: 95px"
         ></CFormTextarea>
       </CFormFloating>

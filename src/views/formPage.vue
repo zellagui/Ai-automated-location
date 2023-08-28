@@ -8,19 +8,8 @@
     <div class="form">
       <br />
       <CForm>
-        <h4>Describe your company.</h4>
-        <CFormInput
-          type="text"
-          id="floatingLabel"
-          v-model="companyDescription"
-        />
-        <br />
-        <h4>Describe your ideal customer.</h4>
-        <CFormInput
-          type="text"
-          id="floatingLabel"
-          v-model="audienceDescription"
-        />
+        <h4>Enter your website link</h4>
+        <CFormInput type="text" id="floatingLabel" v-model="varA" />
         <br />
         <!-- <CLoadingButton
           color="danger"
@@ -46,7 +35,7 @@
 
     <div v-if="buttonClicked" class="map">
       <h4>AI Audience Description:</h4>
-      <div v-for="(item, index) in audienceDescriptionAI" :key="index">
+      <div v-for="(item, index) in audienceDescription" :key="index">
         <CCallout color="danger">
           {{ item }}
         </CCallout>
@@ -154,7 +143,7 @@ import "@coreui/coreui-pro/dist/css/coreui.min.css";
 import deviceSelection from "@/components/deviceSelection.vue";
 import introComp from "@/components/introComp.vue";
 
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
 
 import "leaflet/dist/leaflet.css";
 import { LMap, LTileLayer, LPolygon, LMarker } from "@vue-leaflet/vue-leaflet";
@@ -190,13 +179,13 @@ const yellowIcon = icon({
 });
 
 console.log("---");
-const companyDescription = ref();
-const audienceDescription = ref();
+const varA = ref("https://oa.media");
+const varB = ref("We deliver groceries to our user home.");
 
 const age = ref();
 const income = ref();
 
-const audienceDescriptionAI = ref();
+const audienceDescription = ref();
 const audienceResume = ref();
 const audienceSchedule = ref();
 const audienceName = ref();
@@ -207,7 +196,6 @@ const data = ref([]);
 
 const buttonClicked = ref(false); // New variable to track button click
 const isLoading = ref(false); // New variable
-console.log("🚀 ~ file: formPage.vue:171 ~ isLoading:", isLoading);
 
 const router = useRouter();
 
@@ -227,10 +215,10 @@ function swapPositions(coords: [number, number][]): [number, number][] {
   return coords.map(([lat, lng]: [number, number]) => [lng, lat]);
 }
 
-function submit() {
+async function submit() {
   console.log("try to fetch...");
-  console.log(age.value);
-  console.log(income.value);
+  console.log("age normalized", age.value);
+  console.log("income normalized", income.value);
 
   try {
     var raw = JSON.stringify({
@@ -238,73 +226,77 @@ function submit() {
       income: parseInt(income.value),
     });
 
-    fetch("https://g2qovq6txh.execute-api.us-east-1.amazonaws.com/audience", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: raw,
-    })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return response.json();
-      })
-      .then((result) => {
-        console.log("API result: ", result);
-        // Store the result in data
-        data.value = result.data;
-        devices.value = result.devices;
-        buttonClicked.value = true;
-        isLoading.value = false; // Stop loading
-      })
-      .catch((error) => console.log("error", error));
+    const response = await fetch(
+      "https://g2qovq6txh.execute-api.us-east-1.amazonaws.com/audience",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: raw,
+      }
+    );
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const result = await response.json();
+    if (result) {
+      console.log("API result: ", result);
+
+      // Store the result in data
+      data.value = result.data;
+      devices.value = result.devices;
+      buttonClicked.value = true;
+      isLoading.value = false; // Stop loading
+    } else {
+      console.error("API returned null");
+    }
   } catch (e) {
     console.log("not working");
     console.error(e);
   }
 }
 
-function submitOpenAi() {
+async function submitOpenAi() {
   console.log("try to fetch OpenAi...");
-  console.log(companyDescription.value);
-  console.log(audienceDescription.value);
+  console.log(varA.value);
+  console.log(varB.value);
   isLoading.value = true; // Start loading
 
   try {
     var raw = JSON.stringify({
-      varA: companyDescription.value,
-      varB: audienceDescription.value,
+      varA: varA.value,
     });
 
-    fetch("https://g2qovq6txh.execute-api.us-east-1.amazonaws.com/audience", {
-      method: "Put",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: raw,
-    })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return response.json();
-      })
-      .then((result) => {
-        console.log("AI API result: ", result);
-        age.value = result.targetAge;
-        income.value = result.targetIncome;
-        audienceDescriptionAI.value = result.audienceDescription;
-        audienceResume.value = result.audienceResume;
-        audienceSchedule.value = result.schedule;
-        audienceName.value = result.audienceName;
+    const response = await fetch(
+      "https://g2qovq6txh.execute-api.us-east-1.amazonaws.com/audience",
+      {
+        method: "Put",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: raw,
+      }
+    );
+    console.log("response", response);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const result = await response.json();
+    if (result) {
+      // Check if result is not null
+      console.log("AI API result: ", result);
+      age.value = result.age;
+      income.value = result.income;
+      audienceDescription.value = result.audienceDescription;
+      audienceResume.value = result.audienceResume;
+      audienceSchedule.value = result.audienceSchedule;
+      audienceName.value = result.audienceName;
 
-        submit();
-
-        return result;
-      })
-      .catch((error) => console.log("error", error));
+      submit();
+    } else {
+      console.error("API returned null");
+    }
   } catch (e) {
     isLoading.value = false; // Stop loading even if there was an error
     console.log("not working");
@@ -323,16 +315,17 @@ function generateAudienceDataJson() {
   );
   // Generate audience data object
   const audienceData = {
-    companyDescription: companyDescription.value,
-    audienceDescription: audienceDescription.value,
+    varA: varA.value,
     targetAge: age.value,
     targetIncome: income.value,
-    audienceDescriptionAI: audienceDescriptionAI.value,
+    audienceDescription: audienceDescription.value,
     audienceResume: audienceResume.value,
     audienceSchedule: audienceSchedule.value,
     groupedDevices: nonEmptySelectedGroups,
     audienceName: audienceName.value,
   };
+
+  console.log("audience schedule: " + audienceSchedule.value);
 
   return JSON.stringify(audienceData);
 }
